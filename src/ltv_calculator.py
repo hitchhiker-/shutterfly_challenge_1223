@@ -1,35 +1,42 @@
-def top_x_simple_ltv_customers(x, data):
-    lifespan_years = 10  # Average customer lifespan
-    weeks_per_year = 52
+from datetime import datetime
 
-    # Calculate total expenditures and total site visits for each customer
+def TopXSimpleLTVCustomers(x, D):
+    lifespan_years = 10  # Average customer lifespan (t)
+    weeks_per_year = 52  # Number of weeks per year
+
     customer_expenditures = {}
     customer_site_visits = {}
-    for order in data['orders'].values():
-        customer_expenditures[order.customer_id] = customer_expenditures.get(order.customer_id, 0) + order.total_amount
-    
-    for visit in data['site_visits'].values():
-        customer_site_visits[visit.customer_id] = customer_site_visits.get(visit.customer_id, 0) + 1
+    customer_visit_dates = {}
 
-    # Calculate LTV for each customer
+    for order in D['orders'].values():
+        customer_expenditures[order.customer_id] = customer_expenditures.get(order.customer_id, 0) + order.total_amount
+
+    for visit in D['site_visits'].values():
+        customer_id = visit.customer_id
+        customer_site_visits[customer_id] = customer_site_visits.get(customer_id, 0) + 1
+
+        visit_date = visit.event_time
+        if customer_id in customer_visit_dates:
+            customer_visit_dates[customer_id]['earliest'] = min(customer_visit_dates[customer_id]['earliest'], visit_date)
+            customer_visit_dates[customer_id]['latest'] = max(customer_visit_dates[customer_id]['latest'], visit_date)
+        else:
+            customer_visit_dates[customer_id] = {'earliest': visit_date, 'latest': visit_date}
+
+
     customer_ltv = {}
-    for customer_id in data['customers']:
+    for customer_id, dates in customer_visit_dates.items():
         total_expenditure = customer_expenditures.get(customer_id, 0)
         total_visits = customer_site_visits.get(customer_id, 0)
 
-        # Calculate average expenditure per visit (avoid division by zero)
-        avg_expenditure_per_visit = total_expenditure / total_visits if total_visits > 0 else 0
+        if total_visits == 0 or total_expenditure == 0:
+            continue
 
-        # Calculate the number of weeks spanned by the customer's data
-        # This requires event_time data from customer's first and last site visit
-        # Assuming you have a way to determine the time span in weeks (num_weeks)
+        avg_expenditure_per_visit = total_expenditure / total_visits
+        date_range = dates['latest'] - dates['earliest']
+        num_weeks = max(date_range.days / 7, 1)  # Ensure at least 1 week
+        avg_visits_per_week = total_visits / num_weeks
 
-        num_weeks = ... # Calculate this based on the customer's site visit data
-
-        # Calculate the average number of visits per week
-        avg_visits_per_week = total_visits / num_weeks if num_weeks > 0 else 0
-
-        # Calculate average customer value per week (a)
+        # Average customer value per week (a)
         a = avg_expenditure_per_visit * avg_visits_per_week
 
         # Calculate LTV
@@ -37,5 +44,5 @@ def top_x_simple_ltv_customers(x, data):
         customer_ltv[customer_id] = ltv
 
     # Sort customers by LTV and return the top x
-    top_customers = sorted(customer_ltv.items(), key=lambda item: item[1], reverse=True)
-    return top_customers[:x]
+    top_customers = sorted(customer_ltv.items(), key=lambda item: item[1], reverse=True)[:x]
+    return [(customer_id, ltv) for customer_id, ltv in top_customers]

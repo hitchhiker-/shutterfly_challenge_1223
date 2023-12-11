@@ -10,6 +10,9 @@ class Customer:
 
     @staticmethod
     def parse_event_time(event_time_str):
+        # Replace 'Z' with '+00:00' to represent UTC
+        if event_time_str.endswith('Z'):
+            event_time_str = event_time_str[:-1] + '+00:00'
         return datetime.fromisoformat(event_time_str)
 
     def update_details(self, last_name=None, city=None, state=None):
