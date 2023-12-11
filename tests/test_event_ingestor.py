@@ -1,6 +1,6 @@
 import unittest
-from event_ingestor import ingest
-from events import Customer, SiteVisit, Image, Order
+from src.event_ingestor import ingest
+from src.events import Customer, SiteVisit, Image, Order
 
 class TestEventIngestor(unittest.TestCase):
 

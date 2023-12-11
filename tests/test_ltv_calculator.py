@@ -1,6 +1,6 @@
 import unittest
-from ltv_calculator import TopXSimpleLTVCustomers
-from events import Customer, SiteVisit, Image, Order
+from src.ltv_calculator import TopXSimpleLTVCustomers
+from src.events import Customer, SiteVisit, Image, Order
 
 class TestLTVCalculator(unittest.TestCase):
 
