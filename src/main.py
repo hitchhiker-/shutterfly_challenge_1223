@@ -17,7 +17,7 @@ def main():
             ingest(event, data_store)
 
     # Calculate and display the top X customers based on LTV
-    top_customers = TopXSimpleLTVCustomers(2, data_store)  # Adjust the number as needed
+    top_customers = TopXSimpleLTVCustomers(10, data_store)  # Adjust the number as needed
     
     
     with open('output/output.txt', 'w') as output_file:
