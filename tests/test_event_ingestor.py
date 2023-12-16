@@ -23,7 +23,7 @@ class TestEventIngestor(unittest.TestCase):
             "adr_state": "AK"
         }
         ingest(event, self.data_store)
-        self.assertIn("96f55c7d8f42", self.data_store["customers"])
+        self.assertIn("96f55c7d8f42", self.data_store["customers"].keys()[0])
         self.assertIsInstance(self.data_store["customers"]["96f55c7d8f42"], Customer)
 
     def test_ingest_site_visit(self):

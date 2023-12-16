@@ -1,4 +1,6 @@
 from datetime import datetime
+from datetime import timedelta
+
 
 def TopXSimpleLTVCustomers(x, D):
     lifespan_years = 10  # Average customer lifespan (t)
@@ -30,10 +32,11 @@ def TopXSimpleLTVCustomers(x, D):
 
         if total_visits == 0 or total_expenditure == 0:
             continue
-
+        
+        
         avg_expenditure_per_visit = total_expenditure / total_visits
-        date_range = dates['latest'] - dates['earliest']
-        num_weeks = max(date_range.days / 7, 1)  # Ensure at least 1 week
+        date_range = dates['latest'] - dates['earliest'] #get sunday of earliest and saturday of latest
+        num_weeks = max(date_range.days // 7, 1)  # Ensure at least 1 week
         avg_visits_per_week = total_visits / num_weeks
 
         # Average customer value per week (a)
