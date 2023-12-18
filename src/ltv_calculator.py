@@ -1,5 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
+import math
 
 def TopXSimpleLTVCustomers(x, D):
     lifespan_years = 10  # Average customer lifespan (t), 10 years
@@ -38,7 +39,7 @@ def TopXSimpleLTVCustomers(x, D):
                 
         avg_expenditure_per_visit = total_expenditure / total_visits # average customer expenditure per visit (a)
         date_range = adjusted_latest - adjusted_earliest # timedelta
-        num_weeks = max(date_range.days // 7, 1)  # Ensure at least 1 week
+        num_weeks = max(math.ceil(date_range.days / 7), 1)  # Number of weeks between the earliest and latest visits (t) (at least 1)
         avg_visits_per_week = total_visits / num_weeks # average customer visits per week (v)
 
         # Average customer value per week (a)
@@ -47,7 +48,7 @@ def TopXSimpleLTVCustomers(x, D):
         # Calculate LTV
         ltv = weeks_per_year * a * lifespan_years 
         customer_ltv[customer_id] = ltv # Add the customer LTV to the dictionary
-
+        
     # Sort customers by LTV and return the top x
     top_customers = sorted(customer_ltv.items(), key=lambda item: item[1], reverse=True)[:x] # Sort by LTV and get the top x
     return [(customer_id, ltv) for customer_id, ltv in top_customers] 
@@ -60,4 +61,10 @@ def get_sunday(date):
 
 def get_saturday(date):
     # Get the next Saturday (or the same day if it's already a Saturday)
-    return date + timedelta(days=(5 - date.weekday() + 1) % 7)
+    days_until_saturday = (5 - date.weekday()) % 7
+    if days_until_saturday == 0:
+        # If it's already Saturday, return the same day
+        return date
+    else:
+        # Otherwise, add the number of days until the next Saturday
+        return date + timedelta(days=days_until_saturday)

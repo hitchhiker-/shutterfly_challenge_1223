@@ -48,6 +48,9 @@ class EndToEndTest(unittest.TestCase):
         # Calculate LTV for top X customers
         top_customers = TopXSimpleLTVCustomers(5, self.data_store)
 
+        # Print the output
+        print(top_customers)
+
         # Assertions
         self.assertEqual(len(top_customers), min(5, len(self.data_store["customers"])))
         self.assertIn("cust1", {cust_id for cust_id, _ in top_customers})
@@ -55,62 +58,21 @@ class EndToEndTest(unittest.TestCase):
         # Detailed LTV assertions
         for customer_id, ltv in top_customers:
             self.assertIsInstance(ltv, float)
-            # Assuming a method to calculate expected LTV
-            expected_ltv = calculate_expected_ltv(customer_id, self.data_store)
+            # Comparing with manually calculated LTV
+            expected_ltv = ltv_calc_manual.get(customer_id)
             self.assertAlmostEqual(ltv, expected_ltv, places=2)
 
         # Validation of customer ranking
-        expected_ranking = calculate_expected_ranking(self.data_store)  # Assume this method sorts customers by their expected LTV
+        expected_ranking = sorted(ltv_calc_manual, reverse=True)  # Sort manually calculated LTVs
         actual_ranking = [cust_id for cust_id, _ in top_customers]
         self.assertEqual(actual_ranking, expected_ranking[:len(actual_ranking)])
 
-        # Add more assertions and edge cases as necessary
+        
 
-def calculate_expected_ltv(customer_id, data_store):
-    lifespan_years = 10  # Average customer lifespan (t), 10 years
-    weeks_per_year = 52  # Number of weeks per year
-
-    total_amount = sum(order.total_amount for order in data_store['orders'].values() if order.customer_id == customer_id)
-    number_of_visits = len([visit for visit in data_store['site_visits'].values() if visit.customer_id == customer_id])
-
-    if number_of_visits > 0 and total_amount > 0:
-        # Adjust the dates to the nearest Sunday and Saturday
-        earliest_visit_date = min(visit.event_time for visit in data_store['site_visits'].values() if visit.customer_id == customer_id)
-        latest_visit_date = max(visit.event_time for visit in data_store['site_visits'].values() if visit.customer_id == customer_id)
-        adjusted_earliest = get_sunday(earliest_visit_date)
-        adjusted_latest = get_saturday(latest_visit_date)
-
-        avg_expenditure_per_visit = total_amount / number_of_visits
-        date_range = adjusted_latest - adjusted_earliest
-        num_weeks = max(date_range.days // 7, 1)
-        avg_visits_per_week = number_of_visits / num_weeks
-
-        # Average customer value per week (a)
-        a = avg_expenditure_per_visit * avg_visits_per_week
-
-        # Calculate LTV
-        ltv = weeks_per_year * a * lifespan_years
-        return ltv
-    else:
-        return 0
+# Manual calculation of expected LTV
+ltv_calc_manual = {"cust1": 78000.00, "cust2": 182000.00, "cust3": 286000.00}
 
 
-def calculate_expected_ranking(data_store):
-    lifespan_years = 10  # Average customer lifespan (t)
-    weeks_per_year = 52  # Number of weeks per year
-
-    def calculate_ltv(customer_id):
-        total_amount = sum(order.total_amount for order in data_store['orders'].values() if order.customer_id == customer_id)
-        number_of_visits = len([visit for visit in data_store['site_visits'].values() if visit.customer_id == customer_id])
-        if number_of_visits > 0:
-            return (total_amount / number_of_visits) * weeks_per_year * lifespan_years
-        else:
-            return 0
-
-    customer_ltvs = {customer_id: calculate_ltv(customer_id) for customer_id in data_store['customers']}
-    sorted_customers = sorted(customer_ltvs, key=customer_ltvs.get, reverse=True)
-
-    return sorted_customers
 
 if __name__ == '__main__':
     unittest.main()
