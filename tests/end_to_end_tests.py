@@ -48,9 +48,6 @@ class EndToEndTest(unittest.TestCase):
         # Calculate LTV for top X customers
         top_customers = TopXSimpleLTVCustomers(5, self.data_store)
 
-        # Print the output
-        print(top_customers)
-
         # Assertions
         self.assertEqual(len(top_customers), min(5, len(self.data_store["customers"])))
         self.assertIn("cust1", {cust_id for cust_id, _ in top_customers})
