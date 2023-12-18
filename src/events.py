@@ -1,5 +1,8 @@
 from datetime import datetime
 
+# Define classes for each event type
+
+# Customer class
 class Customer:
     def __init__(self, customer_id, event_time, last_name, city, state):
         self.customer_id = customer_id
@@ -23,6 +26,7 @@ class Customer:
         if state is not None:
             self.state = state
 
+# SiteVisit class
 class SiteVisit:
     def __init__(self, page_id, event_time, customer_id, tags):
         self.page_id = page_id
@@ -30,7 +34,7 @@ class SiteVisit:
         self.customer_id = customer_id
         self.tags = tags if isinstance(tags, list) else []  # Ensure tags is a list
 
-
+# Image class
 class Image:
     def __init__(self, image_id, event_time, customer_id, camera_make, camera_model):
         self.image_id = image_id
@@ -39,6 +43,7 @@ class Image:
         self.camera_make = camera_make
         self.camera_model = camera_model
 
+# Order class
 class Order:
     def __init__(self, order_id, event_time, customer_id, total_amount):
         self.order_id = order_id
