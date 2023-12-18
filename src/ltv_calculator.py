@@ -5,37 +5,36 @@ def TopXSimpleLTVCustomers(x, D):
     lifespan_years = 10  # Average customer lifespan (t), 10 years
     weeks_per_year = 52  # Number of weeks per year
 
-    customer_expenditures = {}
-    customer_site_visits = {}
-    customer_visit_dates = {}
+    customer_expenditures = {} # Total customer expenditure (a)
+    customer_site_visits = {} # Total customer visits (v)
+    customer_visit_dates = {} # Earliest and latest visit dates
 
-    for order in D['orders'].values():
-        customer_expenditures[order.customer_id] = customer_expenditures.get(order.customer_id, 0) + order.total_amount
+    for order in D['orders'].values(): # Iterate through the orders
+        customer_expenditures[order.customer_id] = customer_expenditures.get(order.customer_id, 0) + order.total_amount # Add the order amount to the total expenditure
 
-    for visit in D['site_visits'].values():
-        customer_id = visit.customer_id
-        customer_site_visits[customer_id] = customer_site_visits.get(customer_id, 0) + 1
+    for visit in D['site_visits'].values(): # Iterate through the site visits
+        customer_id = visit.customer_id # Get the customer ID
+        customer_site_visits[customer_id] = customer_site_visits.get(customer_id, 0) + 1 # Increment the total visits
 
-        visit_date = visit.event_time
-        if customer_id in customer_visit_dates:
-            customer_visit_dates[customer_id]['earliest'] = min(customer_visit_dates[customer_id]['earliest'], visit_date)
+        visit_date = visit.event_time # Get the visit date
+        if customer_id in customer_visit_dates: # Update the earliest and latest visit dates
+            customer_visit_dates[customer_id]['earliest'] = min(customer_visit_dates[customer_id]['earliest'], visit_date) 
             customer_visit_dates[customer_id]['latest'] = max(customer_visit_dates[customer_id]['latest'], visit_date)
-        else:
-            customer_visit_dates[customer_id] = {'earliest': visit_date, 'latest': visit_date}
+        else: # Create a new entry for the customer
+            customer_visit_dates[customer_id] = {'earliest': visit_date, 'latest': visit_date} # Set the earliest and latest visit dates to the current visit date
 
 
-    customer_ltv = {}
-    for customer_id, dates in customer_visit_dates.items():
-        total_expenditure = customer_expenditures.get(customer_id, 0)
-        total_visits = customer_site_visits.get(customer_id, 0)
+    customer_ltv = {} # Customer LTV (c)
+    for customer_id, dates in customer_visit_dates.items(): # Iterate through the customers
+        total_expenditure = customer_expenditures.get(customer_id, 0) # Get the total expenditure
+        total_visits = customer_site_visits.get(customer_id, 0) # Get the total visits
 
-        if total_visits == 0 or total_expenditure == 0:
-            continue
+        if total_visits == 0 or total_expenditure == 0: # Skip customers with no visits or no expenditure
+            continue 
         
         # Adjust the dates to the nearest Sunday and Saturday
         adjusted_earliest = get_sunday(dates['earliest'])
         adjusted_latest = get_saturday(dates['latest'])
-
                 
         avg_expenditure_per_visit = total_expenditure / total_visits # average customer expenditure per visit (a)
         date_range = adjusted_latest - adjusted_earliest # timedelta
