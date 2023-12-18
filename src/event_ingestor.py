@@ -1,4 +1,4 @@
-from events import Customer, SiteVisit, Image, Order
+from src.events import Customer, SiteVisit, Image, Order
 
 def ingest(event, data_store):
     event_type = event.get('type')

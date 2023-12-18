@@ -12,58 +12,112 @@ class TestEventIngestor(unittest.TestCase):
             "orders": {}
         }
 
-    def test_ingest_customer(self):
+    def test_ingest_new_customer(self):
         event = {
             "type": "CUSTOMER",
             "verb": "NEW",
-            "key": "96f55c7d8f42",
-            "event_time": "2017-01-06T12:46:46.384Z",
-            "last_name": "Smith",
-            "adr_city": "Middletown",
-            "adr_state": "AK"
+            "key": "customer1",
+            "event_time": "2020-01-01T00:00:00.000Z",
+            "last_name": "Doe",
+            "adr_city": "New York",
+            "adr_state": "NY"
         }
         ingest(event, self.data_store)
-        self.assertIn("96f55c7d8f42", self.data_store["customers"].keys()[0])
-        self.assertIsInstance(self.data_store["customers"]["96f55c7d8f42"], Customer)
+        self.assertIn("customer1", self.data_store["customers"])
+        self.assertIsInstance(self.data_store["customers"]["customer1"], Customer)
 
     def test_ingest_site_visit(self):
         event = {
             "type": "SITE_VISIT",
             "verb": "NEW",
-            "key": "ac05e815502f",
-            "event_time": "2017-01-06T12:45:52.041Z",
-            "customer_id": "96f55c7d8f42"
+            "key": "visit1",
+            "event_time": "2020-01-02T00:00:00.000Z",
+            "customer_id": "customer1",
+            "tags": []
         }
         ingest(event, self.data_store)
-        self.assertIn("ac05e815502f", self.data_store["site_visits"])
-        self.assertIsInstance(self.data_store["site_visits"]["ac05e815502f"], SiteVisit)
+        self.assertIn("visit1", self.data_store["site_visits"])
+        self.assertIsInstance(self.data_store["site_visits"]["visit1"], SiteVisit)
 
-    def test_ingest_image(self):
+    def test_ingest_image_upload(self):
         event = {
             "type": "IMAGE",
             "verb": "UPLOAD",
-            "key": "d8ede43b1d9f",
-            "event_time": "2017-01-06T12:47:12.344Z",
-            "customer_id": "96f55c7d8f42",
+            "key": "image1",
+            "event_time": "2020-01-03T00:00:00.000Z",
+            "customer_id": "customer1",
             "camera_make": "Canon",
             "camera_model": "EOS 80D"
         }
         ingest(event, self.data_store)
-        self.assertIn("d8ede43b1d9f", self.data_store["images"])
-        self.assertIsInstance(self.data_store["images"]["d8ede43b1d9f"], Image)
+        self.assertIn("image1", self.data_store["images"])
+        self.assertIsInstance(self.data_store["images"]["image1"], Image)
 
-    def test_ingest_order(self):
+    def test_ingest_new_order(self):
         event = {
             "type": "ORDER",
             "verb": "NEW",
-            "key": "68d84e5d1a88",
-            "event_time": "2017-01-06T12:55:55.555Z",
-            "customer_id": "96f55c7d8f42",
-            "total_amount": "12.34 USD"
+            "key": "order1",
+            "event_time": "2020-01-04T00:00:00.000Z",
+            "customer_id": "customer1",
+            "total_amount": "100.00 USD"
         }
         ingest(event, self.data_store)
-        self.assertIn("68d84e5d1a88", self.data_store["orders"])
-        self.assertIsInstance(self.data_store["orders"]["68d84e5d1a88"], Order)
+        self.assertIn("order1", self.data_store["orders"])
+        self.assertIsInstance(self.data_store["orders"]["order1"], Order)
+
+    # Continuing from the previous test class...
+
+    def test_ingest_update_customer(self):
+        # Testing update functionality for an existing customer
+        new_event = {
+            "type": "CUSTOMER",
+            "verb": "UPDATE",
+            "key": "customer1",
+            "event_time": "2020-01-05T00:00:00.000Z",
+            "last_name": "Smith",
+            "adr_city": "Boston",
+            "adr_state": "MA"
+        }
+        ingest(new_event, self.data_store)
+        updated_customer = self.data_store["customers"]["customer1"]
+        self.assertEqual(updated_customer.last_name, "Smith")
+        self.assertEqual(updated_customer.city, "Boston")
+        self.assertEqual(updated_customer.state, "MA")
+
+    def test_ingest_update_order(self):
+        # Testing update functionality for an existing order
+        new_event = {
+            "type": "ORDER",
+            "verb": "UPDATE",
+            "key": "order1",
+            "event_time": "2020-01-06T00:00:00.000Z",
+            "customer_id": "customer1",
+            "total_amount": "150.00 USD"
+        }
+        ingest(new_event, self.data_store)
+        updated_order = self.data_store["orders"]["order1"]
+        self.assertEqual(updated_order.total_amount, 150.00)
+
+    def test_ingest_invalid_event_type(self):
+        # Testing ingestion of an event with an invalid type
+        invalid_event = {
+            "type": "INVALID_TYPE",
+            "verb": "NEW",
+            "key": "somekey",
+            "event_time": "2020-01-07T00:00:00.000Z"
+        }
+        ingest(invalid_event, self.data_store)
+        # Assuming the ingest function silently ignores invalid events
+        # Verify that no new entries are created in the data store
+        self.assertNotIn("somekey", self.data_store["customers"])
+        self.assertNotIn("somekey", self.data_store["site_visits"])
+        self.assertNotIn("somekey", self.data_store["images"])
+        self.assertNotIn("somekey", self.data_store["orders"])
+
+    # Add more tests to cover edge cases or error handling scenarios
+
+
 
 if __name__ == '__main__':
     unittest.main()
