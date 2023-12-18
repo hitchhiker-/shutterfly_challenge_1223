@@ -45,12 +45,12 @@ def TopXSimpleLTVCustomers(x, D):
         a = avg_expenditure_per_visit * avg_visits_per_week
 
         # Calculate LTV
-        ltv = weeks_per_year * a * lifespan_years
-        customer_ltv[customer_id] = ltv
+        ltv = weeks_per_year * a * lifespan_years 
+        customer_ltv[customer_id] = ltv # Add the customer LTV to the dictionary
 
     # Sort customers by LTV and return the top x
-    top_customers = sorted(customer_ltv.items(), key=lambda item: item[1], reverse=True)[:x]
-    return [(customer_id, ltv) for customer_id, ltv in top_customers]
+    top_customers = sorted(customer_ltv.items(), key=lambda item: item[1], reverse=True)[:x] # Sort by LTV and get the top x
+    return [(customer_id, ltv) for customer_id, ltv in top_customers] 
 
 
 # Helper functions
