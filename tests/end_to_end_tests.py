@@ -64,12 +64,8 @@ class EndToEndTest(unittest.TestCase):
         actual_ranking = [cust_id for cust_id, _ in top_customers]
         self.assertEqual(actual_ranking, expected_ranking[:len(actual_ranking)])
 
-        
-
 # Manual calculation of expected LTV
 ltv_calc_manual = {"cust1": 78000.00, "cust2": 182000.00, "cust3": 286000.00}
-
-
 
 if __name__ == '__main__':
     unittest.main()
