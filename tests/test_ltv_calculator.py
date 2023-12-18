@@ -37,7 +37,7 @@ class TestLTVCalculator(unittest.TestCase):
         self.assertEqual(result[1][0], "customer2")  # Customer2 with the next highest LTV
         self.assertEqual(result[2][0], "customer1")  # Customer1 with the lowest LTV
 
-    # Sample expected LTV values for the above data store
+    # Test for zero activity customers not be included in the result
     def test_customers_with_zero_activity(self):
         # Add a customer with zero activity
         self.data_store["customers"]["customer4"] = Customer("customer4", "2017-01-04T00:00:00.000Z", "Wilson", "Miami", "FL") # Customer4 with zero activity
