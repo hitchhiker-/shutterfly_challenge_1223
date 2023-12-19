@@ -1,8 +1,6 @@
 # Shutterfly Customer Lifetime Value Code-Challenge
 
 ### Design Decisions:
-what the performance characteristic of the code is and how it could be improved in the future.
-
 1. The ingest function in `event_ingestor.py` has several mechanisms for handling errors and missing data:
     * Invalid Event Types: The function raises a `ValueError` if an unrecognized event type is encountered.
     * Missing Keys: A KeyError is raised and caught if required fields (like event_time) are missing in the event data. This is converted into a `ValueError` with relevant details about the missing key.
@@ -17,13 +15,14 @@ what the performance characteristic of the code is and how it could be improved 
 ### Future improvements
 1. Modularity can be improved by placing each class in a separate module. As there may be more logic and more methods for each class.
 2. As there may be more data to ingest and process, Pandas DataFrames offer more efficient ways to handle the data.
+3. Sorting strategy can be 
 
 ### Assumptions
 1. A week is assumed strictly to be from `Sunday` to `Saturday`, partial weeks are counted as full weeks for calculating time delta between first and last event for each customer.
-2. It is assumed that event_times of all events (`Customer`, `Image`, `SiteVisits`, `Orders`) contribute towards calculation of number of weeks between first and last event for each customer. 
+2. It is assumed that event_times of all events (`Customer`, `Image`, `SiteVisits`, `Orders`) contribute towards calculation of number of weeks between first and last event for each customer.
+3. 52 weeks in a year and average customer lifespan at Shtterfly is 10 years.
 
 ## The additional SQL Challenge:
-
 1. Can you solve the same challenge shared via GIT repo through SQL?
     * Yes, the challenge can be solved with SQL
 
@@ -69,15 +68,8 @@ what the performance characteristic of the code is and how it could be improved 
 ```sql
 SELECT 
     c.customer_id,
-    -- Calculate the number of weeks between the first and last event
-    CASE 
-        WHEN MAX(e.event_time) IS NOT NULL AND MIN(e.event_time) IS NOT NULL THEN
-            GREATEST(DATEDIFF(MAX(e.event_time), MIN(e.event_time)) / 7.0, 1)
-        ELSE
-            1
-    END AS weeks_active,
-    -- Calculate LTV (assuming site_visit events includes order events)
-    (COALESCE(SUM(o.total_amount), 0) / GREATEST(COUNT(DISTINCT sv.visit_id), 1)) * 52 * 10 AS ltv
+    -- Calculate LTV
+    (COALESCE(SUM(o.total_amount), 0) / GREATEST(CEIL(DATEDIFF(MAX(e.event_time), MIN(e.event_time)) / 7.0), 1)) * 52 * 10 AS ltv
 FROM 
     Customers c
 LEFT JOIN 
@@ -95,4 +87,3 @@ GROUP BY
 ORDER BY 
     ltv DESC;
 ```
-
