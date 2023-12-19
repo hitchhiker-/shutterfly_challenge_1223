@@ -15,8 +15,8 @@ class Customer:
     def parse_event_time(event_time_str):
         # Replace 'Z' with '+00:00' to represent UTC
         if event_time_str.endswith('Z'):
-            event_time_str = event_time_str[:-1] + '+00:00'
-        return datetime.fromisoformat(event_time_str)
+            event_time_str = event_time_str[:-1] + '+00:00' 
+        return datetime.fromisoformat(event_time_str) # Convert to datetime object
 
     def update_details(self, last_name=None, city=None, state=None):
         if last_name is not None:
@@ -54,8 +54,8 @@ class Order:
     @staticmethod
     def parse_total_amount(amount_str):
         # Extracting numeric value from the string (assumes format "xx.xx USD")
-        amount = amount_str.split()[0]
-        return float(amount) if amount.replace('.', '', 1).isdigit() else 0
+        amount = amount_str.split()[0] # Split by whitespace and get the first element
+        return float(amount) if amount.replace('.', '', 1).isdigit() else 0 # Replace the first '.' with '' to allow for negative numbers
 
     def update_order(self, total_amount=None):
         if total_amount is not None:
