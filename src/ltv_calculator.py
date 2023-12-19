@@ -57,7 +57,6 @@ def TopXSimpleLTVCustomers(x, D):
 
 
 # Helper functions
-
 # Update the earliest and latest visit dates for a customer if the current event time is earlier or later than the existing dates respectively
 def update_customer_visit_dates(customer_id, event_time, customer_visit_dates):
     if customer_id in customer_visit_dates:
