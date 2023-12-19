@@ -1,4 +1,3 @@
-from datetime import datetime
 from datetime import timedelta
 import math
 
@@ -28,6 +27,9 @@ def TopXSimpleLTVCustomers(x, D):
         update_customer_visit_dates(order.customer_id, order.event_time, customer_visit_dates) # Update the earliest and latest visit dates for the customer
         customer_expenditures[order.customer_id] = customer_expenditures.get(order.customer_id, 0) + order.total_amount # Add the order total amount to the customer expenditure
 
+    for _ in customer_site_visits:
+        print(_, customer_visit_dates[customer_id]['earliest'], customer_visit_dates[customer_id]['latest'])
+        
     customer_ltv = {} # Customer LTV (c)
     for customer_id, dates in customer_visit_dates.items(): # Iterate through the customers
         total_expenditure = customer_expenditures.get(customer_id, 0) # Get the total expenditure
@@ -42,11 +44,11 @@ def TopXSimpleLTVCustomers(x, D):
                 
         avg_expenditure_per_visit = total_expenditure / total_visits # average customer expenditure per visit (a)
         date_range = adjusted_latest - adjusted_earliest # timedelta
-        num_weeks = max(math.ceil(date_range.days / 7), 1)  # Number of weeks between the earliest and latest visits (t) (at least 1)
+        num_weeks = max(math.ceil(date_range.days / 7), 1)  # Number of weeks between the earliest and latest visits (t) (at least 1), considering a week as sunday to saturday
         avg_visits_per_week = total_visits / num_weeks # average customer visits per week (v)
 
         # Average customer value per week (a)
-        a = avg_expenditure_per_visit * avg_visits_per_week
+        a = avg_expenditure_per_visit * avg_visits_per_week 
 
         # Calculate LTV
         ltv = weeks_per_year * a * lifespan_years 
