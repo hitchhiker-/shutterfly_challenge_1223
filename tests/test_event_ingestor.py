@@ -1,4 +1,6 @@
 import unittest
+import json
+import os
 from src.event_ingestor import ingest
 from src.events import Customer, SiteVisit, Image, Order
 
@@ -103,19 +105,35 @@ class TestEventIngestor(unittest.TestCase):
       
     def test_ingest_invalid_event_type(self):
         # Testing ingestion of an event with an invalid type
-        # We are expecting an exception to be raised
+        if os.path.exists('output/invalid_data.json'): # Remove the file if it already exists
+            os.remove('output/invalid_data.json')
+        
         new_event = {
             "type": "INVALID_TYPE",
             "verb": "NEW",
             "key": "event1",
             "event_time": "2020-01-08T00:00:00.000Z"
         }
-        with self.assertRaises(ValueError):
-            ingest(new_event, self.data_store)
+        ingest(new_event, self.data_store)
+        
+        # Check that the invalid event was written to invalid_data.json
+        with open('output/invalid_data.json', 'r') as f:
+            invalid_data = json.load(f)
+        self.assertEqual(invalid_data, new_event)
 
+        # Check if the log file exists before trying to read it
+        if os.path.exists('output/app.log'):
+            with open('output/app.log', 'r') as f:
+                log = f.read()
+            self.assertIn("Invalid event type: INVALID_TYPE", log)
+        else:
+            # Handle the case where log file does not exist
+            self.fail("Log file not created")
+    
     def test_ingest_missing_key(self):
         # Testing ingestion of an event with a missing key
-        # We are expecting an exception to be raised
+        if os.path.exists('output/invalid_data.json'):
+            os.remove('output/invalid_data.json')
         new_event = {
             "type": "SITE_VISIT",
             "verb": "NEW",
@@ -123,13 +141,21 @@ class TestEventIngestor(unittest.TestCase):
             "customer_id": "customer1"
             # Missing 'tags' key
         }
-        with self.assertRaises(ValueError):
-            ingest(new_event, self.data_store)
+        ingest(new_event, self.data_store)
+        with open('output/invalid_data.json', 'r') as f:
+            invalid_data = json.load(f)
+        self.assertEqual(invalid_data, new_event)
 
+        if os.path.exists('output/app.log'):
+            with open('output/app.log', 'r') as f:
+                log = f.read()
+            self.assertIn("Invalid key: 'tags'", log)
+        else:
+            self.fail("Log file not created")
 
     def test_ingest_missing_event_time(self):
-        # Testing ingestion of an event with a missing event_time
-        # We are expecting an exception to be raised
+        if os.path.exists('output/invalid_data.json'):
+            os.remove('output/invalid_data.json')
         new_event = {
             "type": "IMAGE",
             "verb": "UPLOAD",
@@ -137,10 +163,43 @@ class TestEventIngestor(unittest.TestCase):
             "customer_id": "customer1",
             "camera_make": "Nikon",
             "camera_model": "D850"
+            # Missing 'event_time' key
         }
-        with self.assertRaises(ValueError):
-            ingest(new_event, self.data_store)
+        ingest(new_event, self.data_store)
+        with open('output/invalid_data.json', 'r') as f:
+            invalid_data = json.load(f)
+        self.assertEqual(invalid_data, new_event)
 
+        if os.path.exists('output/app.log'):
+            with open('output/app.log', 'r') as f:
+                log = f.read()
+            self.assertIn("Invalid key: 'event_time'", log)
+        else:
+            self.fail("Log file not created")
+
+    def test_ingest_invalid_event_time_format(self):
+        if os.path.exists('output/invalid_data.json'):
+            os.remove('output/invalid_data.json')
+        new_event = {
+            "type": "IMAGE",
+            "verb": "UPLOAD",
+            "key": "image1",
+            "event_time": "INVALID_FORMAT",
+            "customer_id": "customer1",
+            "camera_make": "Nikon",
+            "camera_model": "D850"
+        }
+        ingest(new_event, self.data_store)
+        with open('output/invalid_data.json', 'r') as f:
+            invalid_data = json.load(f)
+        self.assertEqual(invalid_data, new_event)
+
+        if os.path.exists('output/app.log'):
+            with open('output/app.log', 'r') as f:
+                log = f.read()
+            self.assertIn("Invalid value: Invalid isoformat string: 'INVALID_FORMAT'", log)
+        else:
+            self.fail("Log file not created")
 
     def test_ingest_partial_update_customer(self):
         # Create an initial customer
@@ -169,20 +228,7 @@ class TestEventIngestor(unittest.TestCase):
         self.assertEqual(updated_customer.last_name, "Smith")
         self.assertEqual(updated_customer.city, "New York")  # City should remain unchanged
 
-    def test_ingest_invalid_event_time_format(self):
-        # Testing ingestion of an event with an invalid event_time format
-        invalid_event = {
-            "type": "CUSTOMER",
-            "verb": "NEW",
-            "key": "customer2",
-            "event_time": "invalid_date",
-            "last_name": "Johnson",
-            "adr_city": "Boston",
-            "adr_state": "MA"
-        }
-        with self.assertRaises(ValueError):
-            ingest(invalid_event, self.data_store)
-
+    
     def test_ingest_update_customer_before_new(self):
         # Testing ingestion of an 'UPDATE' event for a customer before a 'NEW' event
         update_event = {

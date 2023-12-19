@@ -1,0 +1,12 @@
+root - ERROR - Invalid value: Invalid isoformat string: 'invalid_date'
+root - ERROR - Invalid event type: INVALID_TYPE
+root - ERROR - Invalid key: 'event_time'
+root - ERROR - Invalid key: 'tags'
+root - ERROR - Invalid value: Invalid isoformat string: 'invalid_date'
+root - ERROR - Invalid event type: INVALID_TYPE
+root - ERROR - Invalid key: 'event_time'
+root - ERROR - Invalid key: 'tags'
+root - ERROR - Invalid value: Invalid isoformat string: 'INVALID_FORMAT'
+root - ERROR - Invalid event type: INVALID_TYPE
+root - ERROR - Invalid key: 'event_time'
+root - ERROR - Invalid key: 'tags'
