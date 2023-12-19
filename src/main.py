@@ -25,7 +25,7 @@ def main():
             output_file.write(f"Customer ID: {customer_id}, LTV: {ltv}\n")
     
     # Print the output file path
-    print("\nOutput written to output/output.txt")
+    print("\nOutput written to output/output.txt\n")
 
 if __name__ == "__main__":
     main()
