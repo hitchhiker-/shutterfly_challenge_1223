@@ -86,6 +86,7 @@ def ingest(event, data_store):
         
         else: # Invalid event type
             logging.error(f"Invalid event type: {event_type}")
+            error_occurred = True # Set the flag to True
             with open('output/invalid_data.json', 'a') as f:
                 json.dump(event, f)
                 f.write('\n')
@@ -94,12 +95,14 @@ def ingest(event, data_store):
     # Handle missing keys and invalid values
     except KeyError as e:
         logging.error(f"Invalid key: {e}")
+        error_occurred = True # Set the flag to True
         with open('output/invalid_data.json', 'a') as f:
             json.dump(event, f)
             f.write('\n')
         
     except ValueError as e:
         logging.error(f"Invalid value: {e}")
+        error_occurred = True # Set the flag to True
         with open('output/invalid_data.json', 'a') as f:
             json.dump(event, f)
             f.write('\n')
