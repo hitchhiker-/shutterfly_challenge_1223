@@ -1,7 +1,12 @@
+import json
+import logging
 from src.events import Customer, SiteVisit, Image, Order
+
+logging.basicConfig(filename='output/app.log', filemode='a', format='%(name)s - %(levelname)s - %(message)s')
 
 # Ingests the event and updates the data store
 def ingest(event, data_store):
+    logging.info("Ingesting event")
     try: # Validate the event
         event_type = event.get('type')
         key = event.get('key')
@@ -80,11 +85,23 @@ def ingest(event, data_store):
                     )
         
         else: # Invalid event type
-            raise ValueError(f"Invalid event type: {event_type}")
-    
+            logging.error(f"Invalid event type: {event_type}")
+            with open('output/invalid_data.json', 'a') as f:
+                json.dump(event, f)
+                f.write('\n')
+            print("Error(s) encountered. Logs and invalid data have been written to file. output/app.log, output/invalid_data.json")
+
     # Handle missing keys and invalid values
     except KeyError as e:
-        raise ValueError(f"Invalid key: {e}") from e
+        logging.error(f"Invalid key: {e}")
+        with open('output/invalid_data.json', 'a') as f:
+            json.dump(event, f)
+            f.write('\n')
+        #print("KeyError encountered. Logs and invalid data have been written to file.")
     except ValueError as e:
-        raise ValueError(f"Invalid value: {e}") from e
+        logging.error(f"Invalid value: {e}")
+        with open('output/invalid_data.json', 'a') as f:
+            json.dump(event, f)
+            f.write('\n')
+        #print("ValueError encountered. Logs and invalid data have been written to file.")
 

@@ -2,10 +2,11 @@
 
 ### Design Decisions:
 1. The ingest function in `event_ingestor.py` has several mechanisms for handling errors and missing data:
-    * Invalid Event Types: The function raises a `ValueError` if an unrecognized event type is encountered.
-    * Missing Keys: A `KeyError` is raised and caught if required fields (like `event_time`) are missing in the event data. This is converted into a `ValueError` with relevant details about the missing key.
+    * Invalid Event Types: When the function encounters an invalid event type or invalid data format (such as an incorrect event_time format), it logs an error message to `output/app.log`.
+    * Missing Keys: Similarly, for missing keys, an error message is logged.
+    * Storing Invalid Events: In cases of errors (whether due to invalid event types, data formats, or missing keys), the problematic event data is stored in `output/invalid_data.json`. This allows for post-processing or manual review of these events.
+    * Enhanced Resilience: This approach enhances the resilience of the data ingestion process by ensuring that issues with specific events do not halt the entire ingestion pipeline. It allows for continued processing while keeping a record of any issues that need attention.
     * Updates for Non-Existent Entries: When a new `CUSTOMER` or `ORDER` event is recieved, the `ingest` method checks if there is an existing key already present in the `data_store` (in-memory data structure, dictionary). If not, a new instance is created and added to `data_store`. If a CUSTOMER or ORDER with the same key already exists, the new event is ignored and does not overwrite the existing customer. The function treats updates for non-existent `CUSTOMER` and `ORDER` entries as new entries, creating them instead of discarding or flagging as errors. (It is assumed that updates will have all the entries not just the changed attributes, can be improved in the future if so)
-    * Error Propagation: The function actively raises `ValueError` in cases of invalid or missing data, enabling external handling of these exceptions.
 2. Partial weeks are avoided when calculating LTV. `Earliest` and `latest` event times are adjusted during calculations to nearest Sunday and Saturday respectively.
 
 ### Performance
