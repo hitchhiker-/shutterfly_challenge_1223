@@ -26,10 +26,7 @@ def TopXSimpleLTVCustomers(x, D):
     for order in D['orders'].values(): # Iterate through the orders
         update_customer_visit_dates(order.customer_id, order.event_time, customer_visit_dates) # Update the earliest and latest visit dates for the customer
         customer_expenditures[order.customer_id] = customer_expenditures.get(order.customer_id, 0) + order.total_amount # Add the order total amount to the customer expenditure
-
-    for _ in customer_site_visits:
-        print(_, customer_visit_dates[customer_id]['earliest'], customer_visit_dates[customer_id]['latest'])
-        
+            
     customer_ltv = {} # Customer LTV (c)
     for customer_id, dates in customer_visit_dates.items(): # Iterate through the customers
         total_expenditure = customer_expenditures.get(customer_id, 0) # Get the total expenditure
