@@ -1,0 +1,10 @@
+Customer ID: wxy717zab818, LTV: 57590.0
+Customer ID: wxy789zab012, LTV: 49608.0
+Customer ID: pqr345stu678, LTV: 29067.999999999996
+Customer ID: yza456bcd567, LTV: 28730.0
+Customer ID: c78901b345de, LTV: 23748.4
+Customer ID: def789ghi101, LTV: 22256.0
+Customer ID: jkl789rst012, LTV: 20852.000000000004
+Customer ID: abc123def456, LTV: 19630.0
+Customer ID: uvw123xyz456, LTV: 18200.0
+Customer ID: g210i543j678, LTV: 16900.0

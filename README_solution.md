@@ -15,7 +15,8 @@
 ### Future improvements
 1. Modularity can be improved by placing each class in a separate module. As there may be more logic and more methods for each class.
 2. As there may be more data to ingest and process, Pandas DataFrames offer more efficient ways to handle the data.
-3. Sorting strategy can be 
+3. Improve logging for better debugging and monitoring.
+3. Sorting strategy can be revisited based on data charecteristics.
 
 ### Assumptions
 1. A week is assumed strictly to be from `Sunday` to `Saturday`, partial weeks are counted as full weeks for calculating time delta between first and last event for each customer.
