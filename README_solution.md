@@ -2,11 +2,12 @@
 
 ### Design Decisions:
 1. The ingest function in `event_ingestor.py` has several mechanisms for handling errors and missing data:
-    * Invalid Event Types: The function raises a `ValueError` if an unrecognized event type is encountered.
-    * Missing Keys: A `KeyError` is raised and caught if required fields (like `event_time`) are missing in the event data. This is converted into a `ValueError` with relevant details about the missing key.
-    * Updates for Non-Existent Entries: When a new `CUSTOMER` or `ORDER` event is recieved, the `ingest` method checks if there is an existing key already present in the `data_store` (in-memory data structure, dictionary). If not, a new instance is created and added to `data_store`. If a CUSTOMER or ORDER with the same key already exists, the new event is ignored and does not overwrite the existing customer. The function treats updates for non-existent `CUSTOMER` and `ORDER` entries as new entries, creating them instead of discarding or flagging as errors. (It is assumed that updates will have all the values not just the changed values, current approach can be improved in the future if so)
-    * Error Propagation: The function actively raises `ValueError` in cases of invalid or missing data, enabling external handling of these exceptions.
-2. Partial weeks are avoided when calculating LTV. `Earliest` and `Latest` event times are adjusted during calculations to nearest Sunday and Saturday respectively.
+    * Invalid Event Types: When the function encounters an invalid event type or invalid data format (such as an incorrect event_time format), it logs an error message to `output/app.log`.
+    * Missing Keys: Similarly, for missing keys, an error message is logged.
+    * Storing Invalid Events: In cases of errors (whether due to invalid event types, data formats, or missing keys), the problematic event data is stored in `output/invalid_data.json`. This allows for post-processing or manual review of these events.
+    * Enhanced Resilience: This approach enhances the resilience of the data ingestion process by ensuring that issues with specific events do not halt the entire ingestion pipeline. It allows for continued processing while keeping a record of any issues that need attention.
+    * Updates for Non-Existent Entries: When a new `CUSTOMER` or `ORDER` event is recieved, the `ingest` method checks if there is an existing key already present in the `data_store` (in-memory data structure, dictionary). If not, a new instance is created and added to `data_store`. If a CUSTOMER or ORDER with the same key already exists, the new event is ignored and does not overwrite the existing customer. The function treats updates for non-existent `CUSTOMER` and `ORDER` entries as new entries, creating them instead of discarding or flagging as errors. (It is assumed that updates will have all the entries not just the changed attributes, can be improved in the future if so)
+2. Partial weeks are avoided when calculating LTV. `Earliest` and `latest` event times are adjusted during calculations to nearest Sunday and Saturday respectively.
 
 ### Performance
 1. Selected python `dictionaries` as the in-memory data structure, lookup time for dictionary is `O(1)`.
@@ -15,9 +16,9 @@
 ### Future improvements
 1. Modularity can be improved by placing each class in a separate module. As there may be more logic and more methods for each class.
 2. As there may be more data to ingest and process, Pandas DataFrames offer more efficient ways to handle the data.
-3. At present the error handling is basic, as it raises exceptions with error messages but does not log these errors or provide detailed reports. In future I would recommend implementing logging to record such errors systematically.
+3. Improve logging for better debugging and monitoring.
 4. Current handling of out of order entries especially for `NEW` and `UPDATE` is simple, more robust approach can be implemented in the future. Example, if `UPDATE` entry has missing or partial data.
-4. Sorting strategy can be revisited based on data charecteristics.
+5. Sorting strategy can be revisited based on data charecteristics.
 
 ### Assumptions
 1. A week is assumed strictly to be from `Sunday` to `Saturday`, partial weeks are counted as full weeks for calculating time delta between first and last event for each customer.
@@ -59,6 +60,7 @@
     * TotalAmount: The total amount of the order.
 
 #### Entity-Relationship 
+#### How these tables relate to each other:
 1. Customers
     * One customer can have multiple site visits, image uploads, and orders.
 2. Site Visits, Images, Orders
