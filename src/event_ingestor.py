@@ -8,8 +8,8 @@ def ingest(event, data_store):
         
         if event_type == 'CUSTOMER':
             verb = event.get('verb')
-            if verb == 'NEW' or (verb == 'UPDATE' and key not in data_store['customers']):
-                # Create a new Customer instance
+            if verb == 'NEW' and key not in data_store['customers']:
+                # Create a new Customer instance only if it does not already exist
                 data_store['customers'][key] = Customer(
                     customer_id=key,
                     event_time=event['event_time'],
@@ -18,12 +18,22 @@ def ingest(event, data_store):
                     state=event['adr_state']
                 )
             elif verb == 'UPDATE':
-                # Update the existing Customer instance
-                data_store['customers'][key].update_details(
-                    last_name=event.get('last_name'),
-                    city=event.get('adr_city'),
-                    state=event.get('adr_state')
-                )
+                if key in data_store['customers']:
+                    # Update the existing Customer instance
+                    data_store['customers'][key].update_details(
+                        last_name=event.get('last_name'),
+                        city=event.get('adr_city'),
+                        state=event.get('adr_state')
+                    )
+                else:
+                    # Create a new Customer instance if an 'UPDATE' event comes before a 'NEW' event
+                    data_store['customers'][key] = Customer(
+                        customer_id=key,
+                        event_time=event['event_time'],
+                        last_name=event.get('last_name'),
+                        city=event.get('adr_city'),
+                        state=event.get('adr_state')
+                    )
 
         elif event_type == 'SITE_VISIT':
             # Create a new SiteVisit instance
@@ -46,8 +56,8 @@ def ingest(event, data_store):
 
         elif event_type == 'ORDER':
             verb = event.get('verb')
-            if verb == 'NEW' or (verb == 'UPDATE' and key not in data_store['orders']):
-                # Create a new Order instance
+            if verb == 'NEW' and key not in data_store['orders']:
+                # Create a new Order instance only if it does not already exist
                 data_store['orders'][key] = Order(
                     order_id=key,
                     event_time=event['event_time'],
@@ -55,10 +65,19 @@ def ingest(event, data_store):
                     total_amount=event['total_amount']
                 )
             elif verb == 'UPDATE':
-                # Update the existing Order instance
-                data_store['orders'][key].update_order(
-                    total_amount=event.get('total_amount')
-                )
+                if key in data_store['orders']:
+                    # Update the existing Order instance
+                    data_store['orders'][key].update_order(
+                        total_amount=event.get('total_amount')
+                    )
+                else:
+                    # Create a new Order instance if an 'UPDATE' event comes before a 'NEW' event
+                    data_store['orders'][key] = Order(
+                        order_id=key,
+                        event_time=event['event_time'],
+                        customer_id=event['customer_id'],
+                        total_amount=event.get('total_amount')
+                    )
         
         else: # Invalid event type
             raise ValueError(f"Invalid event type: {event_type}")

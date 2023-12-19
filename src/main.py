@@ -1,5 +1,4 @@
 import json
-import pprint
 from event_ingestor import ingest
 from ltv_calculator import TopXSimpleLTVCustomers
 
@@ -17,8 +16,6 @@ def main():
         for event in events:
             ingest(event, data_store)
     
-    #pprint.pprint(data_store)
-
     # Calculate and display the top X customers based on LTV
     top_customers = TopXSimpleLTVCustomers(10, data_store)  # Adjust the number as needed
     
@@ -28,7 +25,7 @@ def main():
             output_file.write(f"Customer ID: {customer_id}, LTV: {ltv}\n")
     
     # Print the output file path
-    print("\nOutput written to output/output.txt")
+    print("\nOutput written to output/output.txt\n")
 
 if __name__ == "__main__":
     main()

@@ -183,5 +183,57 @@ class TestEventIngestor(unittest.TestCase):
         with self.assertRaises(ValueError):
             ingest(invalid_event, self.data_store)
 
+    def test_ingest_update_customer_before_new(self):
+        # Testing ingestion of an 'UPDATE' event for a customer before a 'NEW' event
+        update_event = {
+            "type": "CUSTOMER",
+            "verb": "UPDATE",
+            "key": "customer2",
+            "event_time": "2020-01-01T00:00:00.000Z",
+            "last_name": "Doe",
+            "adr_city": "New York",
+            "adr_state": "NY"
+        }
+        new_event = {
+            "type": "CUSTOMER",
+            "verb": "NEW",
+            "key": "customer2",
+            "event_time": "2020-01-01T00:00:00.000Z",
+            "last_name": "Smith",
+            "adr_city": "Los Angeles",
+            "adr_state": "CA"
+        }
+        ingest(update_event, self.data_store)
+        ingest(new_event, self.data_store)
+        self.assertIn("customer2", self.data_store["customers"])
+        self.assertIsInstance(self.data_store["customers"]["customer2"], Customer)
+        self.assertEqual(self.data_store["customers"]["customer2"].last_name, "Doe")
+        self.assertEqual(self.data_store["customers"]["customer2"].city, "New York")
+        self.assertEqual(self.data_store["customers"]["customer2"].state, "NY")
+
+    def test_ingest_update_order_before_new(self):
+        # Testing ingestion of an 'UPDATE' event for an order before a 'NEW' event
+        update_event = {
+            "type": "ORDER",
+            "verb": "UPDATE",
+            "key": "order2",
+            "event_time": "2020-01-01T00:00:00.000Z",
+            "customer_id": "customer2",
+            "total_amount": "100 USD"
+        }
+        new_event = {
+            "type": "ORDER",
+            "verb": "NEW",
+            "key": "order2",
+            "event_time": "2020-01-01T00:00:00.000Z",
+            "customer_id": "customer2",
+            "total_amount": "200 USD"
+        }
+        ingest(update_event, self.data_store)
+        ingest(new_event, self.data_store)
+        self.assertIn("order2", self.data_store["orders"])
+        self.assertIsInstance(self.data_store["orders"]["order2"], Order)
+        self.assertEqual(self.data_store["orders"]["order2"].total_amount, 100.0)
+
 if __name__ == '__main__':
     unittest.main()
